@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h> //exit
 #include <unistd.h> //read, write
-
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+#include <arpa/inet.h> //inet_ntoa
 int main() {
     int fd;
     struct sockaddr_in srv; /* used by bind() */
@@ -14,9 +16,9 @@ int main() {
 
     /* Get the file descriptor */
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(fd == -1) {
+    if(fd < 0) {
         printf("Error");
-        return -1;
+       exit(1);
     }
 
     srv.sin_family = AF_INET; /* use the Internet address family */
@@ -38,12 +40,13 @@ int main() {
         perror("accept");
         exit(1);
     }
+    printf("A client \"%s\" has connected via port num %d using SOCK_STREAM (TCP)\n", inet_ntoa(cli.sin_addr), ntohs(srv.sin_port));
     /* Read data from the socket */
     if((nbytes = read(newfd, buf, sizeof(buf))) < 0) {
         perror("read");
         exit(1);
     }
 
-    printf("123\n");
+    printf("End\n");
     return 0;
 }
