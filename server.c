@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h> //exit
 #include <unistd.h> //read, write
-//#include <sys/socket.h>
-//#include <netinet/in.h>
 #include <arpa/inet.h> //inet_ntoa
 int main() {
     int fd;
@@ -34,6 +32,9 @@ int main() {
         perror("listen");
         exit(1);
     }
+    else {
+        printf("Listening...\n");
+    }
     /* Accept requests */
     newfd = accept(fd, (struct sockaddr*) &cli, &cli_len);
     if(newfd < 0) {
@@ -42,11 +43,16 @@ int main() {
     }
     printf("A client \"%s\" has connected via port num %d using SOCK_STREAM (TCP)\n", inet_ntoa(cli.sin_addr), ntohs(srv.sin_port));
     /* Read data from the socket */
+    FILE *file = fopen(????);
+    fwrite(buf, sizeof(char), sizeof(buf), file);
     if((nbytes = read(newfd, buf, sizeof(buf))) < 0) {
         perror("read");
         exit(1);
     }
-
-    printf("End\n");
+    else {
+        printf("The client sends a file \"1.txt\" with size of %d bytes.\n", nbytes);
+        printf("The Huffman coding data are stored in \"1-code.txt\".\n");
+    }
+    printf("The client \"%s\" with port %d has terminated the connection.\n", inet_ntoa(cli.sin_addr), ntohs(srv.sin_port));
     return 0;
 }
