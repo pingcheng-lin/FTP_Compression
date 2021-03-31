@@ -1,10 +1,4 @@
-#include <netinet/in.h> //struct sockaddr_in, AF_INET, SOCK_STREAM, IPPROTO_TCP, INADDR_ANY
-#include <stdio.h>
-#include <stdlib.h> //exit
-#include <unistd.h> //read, write
-#include <arpa/inet.h> //inet_ntoa
-#include <string.h> //strcpy
-#define MAX_FILENAME_SIZE 30
+#include"header.h"
 int main() {
     int fd;
     struct sockaddr_in srv; //used by bind()
@@ -76,8 +70,6 @@ int main() {
             strcpy(filename, buf);
             printf("%s\n", filename);
             file = fopen(filename, "w");//reset file
-            fclose(file);
-            file = fopen(filename, "a");//append file
         }
         //read filesize
         if(read(newfd, &filesize, sizeof(filesize)) < 0) { 

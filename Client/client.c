@@ -1,20 +1,10 @@
-#include <netinet/in.h> //struct sockaddr_in, AF_INET, SOCK_STREAM, IPPROTO_TCP, INADDR_ANY
-#include <stdio.h>
-#include <stdlib.h> //exit
-#include <unistd.h> //read, write
-#include <arpa/inet.h> //inet_addr
-#include <string.h> //strcmp
-#include <time.h> //current time
-#define MAX_FILENAME_SIZE 30
-int input(struct sockaddr_in *srv, char *filename);
-void sendd(char *file);
-
+#include"header.h"
 int main() {
     int fd; //socket descriptor
     struct sockaddr_in srv; //used by connect()
     char buf[512]; //used by write()
     int nbytes; //used by write()
-    printf("Welcome\nYou can 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n");
+    printf("Welcome\nYou can 'link' [an IP address] [a port], 'send' [a file], 'leave', or 'help'.\n");
     printf("===\nWaiting...\n");
 
     //Get the file descriptor
@@ -55,7 +45,6 @@ int main() {
                 perror("fopen");
                 exit(1);
             }
-            
             //send filename
             if((nbytes = write(fd, filename, sizeof(buf))) < 0) { 
                 perror("write");
@@ -94,29 +83,10 @@ int main() {
             printf("Bye bye.\n");
             break;
         }
+        if(flag == 4) {
+            printf("You can 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n");
+            printf("===\nwaiting...\n");
+        }
     }
     return 0;
-}
-
-int input(struct sockaddr_in *srv, char *filename) {
-    char command[5], ip_address[15];
-    int port;
-    while(1) {
-        scanf("%s", command);
-        if(strcmp("link", command) == 0) {
-            scanf("%s", ip_address);
-            srv->sin_addr.s_addr = inet_addr(ip_address); //connect: connect to IP address
-            scanf("%d", &port);
-            srv->sin_port = htons(port); //connect: socket 'fd' to port
-            return 1;
-        }
-        else if(strcmp("send", command) == 0) {
-            scanf("%s", filename);
-            return 2;
-        }
-        else if(strcmp("leave", command) == 0)
-            return 3;
-        else
-            printf("Need 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n");
-    }
 }

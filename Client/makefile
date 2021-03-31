@@ -1,4 +1,4 @@
 all:
-	gcc client.c -o client
+	gcc client.c header.c -o client
 clean:
 	rm client
