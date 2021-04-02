@@ -58,7 +58,7 @@ int main() {
                 exit(1);
             }
             //do huffman
-            huffman(file);
+            huffman(filename);
             fseek(file, 0 , SEEK_SET);
             //send file
             while(!feof(file)) {

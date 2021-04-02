@@ -11,6 +11,9 @@
 #include<queue>
 #include<iostream>
 #include<string>
+#include<fstream>
+#include<bitset>
+#include<cmath>
 using namespace std;
 class Node {
 public:
@@ -22,5 +25,5 @@ public:
     Node *right = nullptr, *left = nullptr;
 };
 int input(struct sockaddr_in *srv, char *filename);
-void huffman(FILE* file);
+void huffman(string filename);
 void travel_huff_code(Node* root, string flag);

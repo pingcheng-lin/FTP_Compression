@@ -3,7 +3,9 @@
         "socket.h": "c",
         "types.h": "c",
         "header.h": "c",
-        "random": "cpp"
+        "random": "cpp",
+        "ostream": "cpp",
+        "iostream": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

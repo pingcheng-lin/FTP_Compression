@@ -44,13 +44,15 @@ Node::Node(Node* first, Node* second) {
     right = first;
     left = second;
 }
-void huffman(FILE* file) {
+void huffman(string filename) {
     //get char and frequency mapping
+    fstream file;
+    file.open(filename, ios::in | ios::binary);
     map<char, int> ch_freq;
     map<char, int>::iterator it;
     char ch;
-    while(!feof(file)) {
-        ch = fgetc(file);
+    while(!file.eof()) {
+        ch = file.get();
         ch_freq[ch]++;
     }
     //push all map into priority queue
@@ -59,8 +61,29 @@ void huffman(FILE* file) {
         Node* temp = new Node(it->first, it->second);
         queue.push(temp);
     }
+    //calculate fixed binary
+    priority_queue<Node*, vector<Node*>, compare> fixed_ch_code = queue;
+    map<char, string> fixed_table;
+    int count = 0, len;
+    for(len = 0; fixed_ch_code.size() > pow(2,len); len++);
+        string binary = "";
+        int temp = count;
+        for(int i = 0; i < len; i++) {
+            if(temp & 1 == 1)
+                binary = "1" + binary;
+            else
+                binary = "0" + binary;
+            temp >>= 1;
+        }
+        fixed_table[fixed_ch_code.top()->letter] = binary;
+        cout << fixed_ch_code.top()->letter << "=>" << binary << endl;
+        count++;
+        fixed_ch_code.pop();
+    }
+    file.seekg(0, file.beg);
+    
     //build huffman tree
-    Node* root;
+    /*Node* root;
     while(1) {
         Node* first = queue.top();
         queue.pop();
@@ -74,6 +97,10 @@ void huffman(FILE* file) {
         }
     }
     travel_huff_code(root, "");
+    map<char, string> char_code;
+    //travel_get_code(char_code);
+    */
+
 }
 
 void travel_huff_code(Node* node, string flag) {
