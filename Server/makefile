@@ -1,4 +1,4 @@
 all:
-	gcc server.c header.c -o server
+	g++ server.cpp header.cpp -o server
 clean:
 	rm server

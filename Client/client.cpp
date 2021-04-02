@@ -1,4 +1,4 @@
-#include"header.h"
+#include"header.hpp"
 int main() {
     int fd; //socket descriptor
     struct sockaddr_in srv; //used by connect()
@@ -6,7 +6,6 @@ int main() {
     int nbytes; //used by write()
     printf("Welcome\nYou can 'link' [an IP address] [a port], 'send' [a file], 'leave', or 'help'.\n");
     printf("===\nWaiting...\n");
-
     //Get the file descriptor
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(fd < 0) {
@@ -58,11 +57,13 @@ int main() {
                 perror("write");
                 exit(1);
             }
+            //do huffman
+            huffman(file);
+            fseek(file, 0 , SEEK_SET);
             //send file
             while(!feof(file)) {
                 num = fread(buf, sizeof(char), sizeof(buf), file);
                 total += num;
-                printf("%d\n", num);
                 if((nbytes = write(fd, buf, num)) < 0) {
                     perror("write");
                     exit(1);

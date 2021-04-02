@@ -5,11 +5,22 @@
 #include <arpa/inet.h> //inet_addr
 #include <string.h> //strcmp
 #include <time.h> //current time
+#include <queue>
 #define MAX_FILENAME_SIZE 30
-struct Node {
-    char word;
+#include<map>
+#include<queue>
+#include<iostream>
+#include<string>
+using namespace std;
+class Node {
+public:
+    Node(char c, int f);
+    Node(Node* first, Node* second);
+    char letter;
     int freq;
-    struct Node *right, *left;
+    string code;
+    Node *right = nullptr, *left = nullptr;
 };
 int input(struct sockaddr_in *srv, char *filename);
-void huffman();
+void huffman(FILE* file);
+void travel_huff_code(Node* root, string flag);

@@ -1,4 +1,4 @@
-#include"header.h"
+#include"header.hpp"
 int main() {
     int fd;
     struct sockaddr_in srv; //used by bind()
@@ -36,7 +36,7 @@ int main() {
     }
     
     //Accept requests
-    newfd = accept(fd, (struct sockaddr*) &cli, &cli_len);
+    newfd = accept(fd, (struct sockaddr*) &cli, (socklen_t*)&cli_len);
     if(newfd < 0) {
         perror("accept");
         exit(1);
@@ -84,7 +84,7 @@ int main() {
                 perror("read");
                 exit(1);
             }
-            else{
+            else {
                 fwrite(buf, sizeof(char), nbytes, file);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
