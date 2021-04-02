@@ -12,7 +12,7 @@ int main() {
     //Get the file descriptor
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(fd < 0) {
-        printf("Error");
+        cout << "Error\n";
         exit(1);
     }
 
@@ -32,7 +32,7 @@ int main() {
         exit(1);
     }
     else {
-        printf("Listening...\n");
+        cout << "Listening...\n";
     }
     
     //Accept requests
@@ -41,20 +41,21 @@ int main() {
         perror("accept");
         exit(1);
     }
-    printf("A client \"%s\" has connected via port num %d using SOCK_STREAM (TCP)\n", inet_ntoa(cli.sin_addr), ntohs(cli.sin_port));
+    cout << "A client \"" << inet_ntoa(cli.sin_addr) << "\" has connected via port num "  << ntohs(cli.sin_port) << " using SOCK_STREAM (TCP)\n";
     
     while(1) {
         //Read data from the socket
-        FILE *file;
+        FILE *file, *related_file;
         char filename[MAX_FILENAME_SIZE];
-        int filesize;
+        char related_filename[MAX_FILENAME_SIZE];
+        int filesize, related_filesize;
         //read flag
         if(read(newfd, buf, sizeof(buf)) < 0) { 
             perror("read");
             exit(1);
         }
         else if(strcmp(buf, "leave") == 0) {
-            printf("The client \"%s\" with port %d has terminated the connection.\n", inet_ntoa(cli.sin_addr), ntohs(cli.sin_port));
+            cout << "The client \"" << inet_ntoa(cli.sin_addr) << "\" with port " << ntohs(cli.sin_port) << " has terminated the connection.\n";
             break;
         }
         //read filename
@@ -63,23 +64,51 @@ int main() {
             exit(1);
         }
         else if(strcmp(buf, "error") == 0) {
-            printf("File open error!!!\n");
+            cout << "File open error!!!\n";
             exit(1);
         }
         else {
             strcpy(filename, buf);
-            printf("%s\n", filename);
             file = fopen(filename, "w");//reset file
         }
+
+
+        //read related_file name
+        if(read(newfd, buf, sizeof(buf)) < 0) { 
+            perror("read");
+            exit(1);
+        }
+        else {
+            strcpy(related_filename, buf);
+            related_file = fopen(related_filename, "w");//reset file
+        }
+        //read related_file size
+        if(read(newfd, &related_filesize, sizeof(related_filesize)) < 0) { 
+            perror("read");
+            exit(1);
+        }
+        cout << "filesize: " << related_filesize << endl;
+        //read related_file
+        for(int i = related_filesize; i > 0; i-=nbytes)
+            if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
+                perror("read");
+                exit(1);
+            }
+            else {
+                fwrite(buf, sizeof(char), nbytes, related_file);
+                memset(buf, 0, 512*sizeof(buf[0]));
+            }
+        fclose(related_file);
+
+
         //read filesize
         if(read(newfd, &filesize, sizeof(filesize)) < 0) { 
             perror("read");
             exit(1);
         }
-        printf("filesize:%d\n", filesize);
+        cout << "filesize: " << filesize << endl;
         //read file
         for(int i = filesize; i > 0; i-=nbytes)
-            //printf("%d=%d\n", i, nbytes);
             if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
                 perror("read");
                 exit(1);
@@ -89,10 +118,10 @@ int main() {
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
                 
-        printf("The client sends a file \"%s\" with size of %d bytes.\n", filename, filesize);
-        printf("The Huffman coding data are stored in \"txt\".\n");
+        cout << "The client sends a file \"" << filename << "\" with size of " << filesize << " bytes.\n";
+        cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
         
-        printf("===\n");
+        cout << "===\n";
         fclose(file);
     }
     return 0;
