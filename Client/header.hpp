@@ -21,6 +21,10 @@ public:
     string code;
     Node *right = nullptr, *left = nullptr;
 };
-int input(struct sockaddr_in *srv, char *filename);
+class Compare {
+public:
+    bool operator()(Node* first, Node* second);
+};
+int input(struct sockaddr_in *srv, string &filename);
 void huffman(string filename, int fd);
-void travel_huff_code(Node* root, string flag);
+//void travel_huff_code(Node* root, string flag);

@@ -5,4 +5,5 @@
 #include <iostream>
 #include <cstdlib> //exit
 #include <cstring> //strcpy
+#include <fstream>
 using namespace std;

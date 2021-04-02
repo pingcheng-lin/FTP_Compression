@@ -3,8 +3,6 @@ int main() {
     int fd; //socket descriptor
     struct sockaddr_in srv; //used by connect()
     char buf[512]; //used by write()
-    int nbytes; //used by write()
-
 
     cout << "Welcome\nYou can 'link' [an IP address] [a port], 'send' [a file], 'leave', or 'help'.\n";
     cout << "===\nWaiting...\n";
@@ -14,9 +12,10 @@ int main() {
         cout << "Error\n";
         exit(1);
     }
+    //determine what to do according to input 
     bool do_you_link = false;
     while(1) {
-        char filename[MAX_FILENAME_SIZE];
+        string filename;
         int flag = input(&srv, filename); //1: link, 2: send, 3:leave
         if(flag == 1 && !do_you_link) {
             do_you_link = true;
@@ -35,44 +34,45 @@ int main() {
                 cout << "===\nwaiting...\n";
                 continue;
             }
-            //Write data to the socket
-            FILE *file;
+            cout << filename << endl;
             //send flag
-            if((nbytes = write(fd, "send", sizeof(buf))) < 0) { 
+            if(write(fd, "send", sizeof(buf)) < 0) { 
                 perror("write");
                 exit(1);
             }
             //open file
-            if((file = fopen(filename, "r")) == NULL) {
-                if((nbytes = write(fd, "error", sizeof(buf))) < 0) { 
+            fstream file;
+            cout << filename << endl;
+            file.open(filename, ios::in);
+            if(!file.is_open()) {
+                if(write(fd, "error", sizeof(buf)) < 0) { 
                     perror("write");
                     exit(1);
                 }
-                perror("fopen");
+                perror("open");
                 exit(1);
             }
             //send filename
-            if((nbytes = write(fd, filename, sizeof(buf))) < 0) { 
+            if(write(fd, filename.c_str(), sizeof(buf)) < 0) { 
                 perror("write");
                 exit(1);
             }
 
             //do huffman and send compress-related file
             huffman(filename, fd);
-            fseek(file, 0 , SEEK_SET);
 
             //send filesize
-            fseek(file, 0 , SEEK_END);
-            int filesize = ftell(file);
-            fseek(file, 0 , SEEK_SET);
-            if((nbytes = write(fd, &filesize, sizeof(filesize))) < 0) { 
+            file.seekg(0 , file.end);
+            int filesize = file.tellg();
+            file.seekg(0 , file.beg);
+            if(write(fd, &filesize, sizeof(filesize)) < 0) { 
                 perror("write");
                 exit(1);
             }
             //send file
-            while(!feof(file)) {
-                int num = fread(buf, sizeof(char), sizeof(buf), file);
-                if((nbytes = write(fd, buf, num)) < 0) {
+            while(!file.eof()) {
+                file.read(buf, sizeof(buf));
+                if(write(fd, buf, file.gcount()) < 0) {
                     perror("write");
                     exit(1);
                 }
@@ -84,9 +84,10 @@ int main() {
                  << " " << time.tm_hour << ":" << time.tm_min << endl;
             cout << "Using fixed-length codeword (3 bits)\n";
             cout << "===\nwaiting...\n";
+            file.close();
         }
         else if(flag == 3){
-            if((nbytes = write(fd, "leave", sizeof(buf))) < 0) { 
+            if(write(fd, "leave", sizeof(buf)) < 0) { 
                 perror("write");
                 exit(1);
             }

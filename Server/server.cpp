@@ -45,9 +45,8 @@ int main() {
     
     while(1) {
         //Read data from the socket
-        FILE *file, *related_file;
-        char filename[MAX_FILENAME_SIZE];
-        char related_filename[MAX_FILENAME_SIZE];
+        fstream file, related_file;
+        string filename, related_filename;
         int filesize, related_filesize;
         //read flag
         if(read(newfd, buf, sizeof(buf)) < 0) { 
@@ -68,8 +67,8 @@ int main() {
             exit(1);
         }
         else {
-            strcpy(filename, buf);
-            file = fopen(filename, "w");//reset file
+            filename = buf;
+            file.open(filename, ios::out);//reset file
         }
 
 
@@ -79,8 +78,8 @@ int main() {
             exit(1);
         }
         else {
-            strcpy(related_filename, buf);
-            related_file = fopen(related_filename, "w");//reset file
+            related_filename = buf;
+            related_file.open(related_filename, ios::out);//reset file
         }
         //read related_file size
         if(read(newfd, &related_filesize, sizeof(related_filesize)) < 0) { 
@@ -95,10 +94,10 @@ int main() {
                 exit(1);
             }
             else {
-                fwrite(buf, sizeof(char), nbytes, related_file);
+                related_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
-        fclose(related_file);
+        related_file.close();
 
 
         //read filesize
@@ -114,7 +113,7 @@ int main() {
                 exit(1);
             }
             else {
-                fwrite(buf, sizeof(char), nbytes, file);
+                file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
                 
@@ -122,7 +121,7 @@ int main() {
         cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
         
         cout << "===\n";
-        fclose(file);
+        file.close();
     }
     return 0;
 }

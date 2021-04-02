@@ -1,34 +1,28 @@
 #include"header.hpp"
-int input(struct sockaddr_in *srv, char *filename) {
-    char command[5], ip_address[15];
+int input(struct sockaddr_in *srv, string &filename) {
+    string command, ip_address;
     int port;
     while(1) {
         cin >> command;
-        if(strcmp("link", command) == 0) {
+        if(command == "link") {
             cin >> ip_address;
-            srv->sin_addr.s_addr = inet_addr(ip_address); //connect: connect to IP address
+            srv->sin_addr.s_addr = inet_addr(ip_address.c_str()); //connect: connect to IP address
             cin >> port;
             srv->sin_port = htons(port); //connect: socket 'fd' to port
             return 1;
         }
-        else if(strcmp("send", command) == 0) {
+        else if(command == "send") {
             cin >> filename;
             return 2;
         }
-        else if(strcmp("leave", command) == 0)
+        else if(command == "leave")
             return 3;
-        else if(strcmp("help", command) == 0)
+        else if(command == "help")
             return 4;
         else
             cout << "Need 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n";
     }
 }
-class compare {
-public:
-    bool operator()(Node* first, Node* second) {
-        return first->freq > second->freq;
-    }
-};
 Node::Node(char c, int f) {
     letter = c;
     freq = f;
@@ -43,10 +37,12 @@ Node::Node(Node* first, Node* second) {
     right = first;
     left = second;
 }
+bool Compare::operator()(Node* first, Node* second) {
+    return first->freq > second->freq;
+}
 void huffman(string filename, int fd) {
     //get char and frequency mapping
-    fstream file;
-    file.open(filename, ios::in | ios::binary);
+    fstream file(filename, ios::in | ios::binary);
     map<char, int> ch_freq;
     map<char, int>::iterator it;
     char ch;
@@ -55,11 +51,11 @@ void huffman(string filename, int fd) {
         ch_freq[ch]++;
     }
     //push all map into priority queue
-    priority_queue<Node*, vector<Node*>, compare> queue;
+    //priority_queue<Node*, vector<Node*>, Compare> queue;
     priority_queue<Node*, vector<Node*>, greater<Node*>> fixed_ch_code;
     for(it = ch_freq.begin(); it != ch_freq.end(); it++) {
         Node* temp = new Node(it->first, it->second);
-        queue.push(temp);
+        //queue.push(temp);
         fixed_ch_code.push(temp);
     }
     //calculate fixed binary
@@ -83,7 +79,7 @@ void huffman(string filename, int fd) {
     }
     file.close();
     fstream fixed_file;
-    char related_filename[MAX_FILENAME_SIZE] = "code";
+    string related_filename = "code-" + filename + ".txt";
     fixed_file.open(related_filename, ios::out);
     fixed_file << "Fixed-length Huffman coding (3-bit codeword):\n";
     for(map<char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++)
@@ -92,35 +88,29 @@ void huffman(string filename, int fd) {
     
     //send related_file name
     char buf[512]; //used by write()
-    int nbytes; //used by write()
-    if((nbytes = write(fd, related_filename, sizeof(buf))) < 0) { 
+    if(write(fd, related_filename.c_str(), sizeof(buf)) < 0) { 
         perror("write");
         exit(1);
     }
+    
     //send related_file size
-    FILE *related_file = fopen(related_filename, "r");
-    fseek(related_file, 0 , SEEK_END);
-    int filesize = ftell(related_file);
-    fseek(related_file, 0 , SEEK_SET);
-    if((nbytes = write(fd, &filesize, sizeof(filesize))) < 0) { 
+    fstream related_file(related_filename, ios::in);
+    related_file.seekg(0 , related_file.end);
+    int filesize = related_file.tellg();
+    related_file.seekg(0 , related_file.beg);
+    if(write(fd, &filesize, sizeof(filesize)) < 0) { 
         perror("write");
         exit(1);
     }
     //send related_file
-    while(!feof(related_file)) {
-        int num = fread(buf, sizeof(char), sizeof(buf), related_file);
-        if((nbytes = write(fd, buf, num)) < 0) {
+    while(!related_file.eof()) {
+        related_file.read(buf, sizeof(buf));
+        if(write(fd, buf, related_file.gcount()) < 0) {
             perror("write");
             exit(1);
         }
     }
 }
-
-
-
-
-
-
     //build huffman tree
     /*Node* root;
     while(1) {
@@ -140,10 +130,10 @@ void huffman(string filename, int fd) {
     //travel_get_code(char_code);
     */
 
-void travel_huff_code(Node* node, string flag) {
+/*void travel_huff_code(Node* node, string flag) {
     if(node == nullptr)
         return;
     node->code = node->code + flag;
     travel_huff_code(node->left, "0");
     travel_huff_code(node->right, "1");
-}
+}*/
