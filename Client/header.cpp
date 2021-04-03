@@ -23,7 +23,7 @@ int input(struct sockaddr_in *srv, string &filename) {
             cout << "Need 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n";
     }
 }
-Node::Node(char c, int f) {
+Node::Node(unsigned char c, int f) {
     letter = c;
     freq = f;
     code = "";
@@ -43,9 +43,9 @@ bool Compare::operator()(Node* first, Node* second) {
 void huffman(string filename, int fd) {
     //get char and frequency mapping
     fstream file(filename, ios::in | ios::binary);
-    map<char, int> ch_freq;
-    map<char, int>::iterator it;
-    char ch;
+    map<unsigned char, int> ch_freq;
+    map<unsigned char, int>::iterator it;
+    unsigned char ch;
     while(!file.eof()) {
         ch = file.get();
         ch_freq[ch]++;
@@ -59,7 +59,7 @@ void huffman(string filename, int fd) {
         fixed_ch_code.push(temp);
     }
     //calculate fixed binary
-    map<char, string> fixed_table;
+    map<unsigned char, string> fixed_table;
     int count = 0, len;
     string binary;
     for(len = 0; fixed_ch_code.size() > pow(2,len); len++);
@@ -80,9 +80,11 @@ void huffman(string filename, int fd) {
     file.close();
     fstream fixed_file;
     string related_filename = "code-" + filename + ".txt";
-    fixed_file.open(related_filename, ios::out);
+    fixed_file.open(related_filename, ios::out | ios::binary);
     fixed_file << "Fixed-length Huffman coding (3-bit codeword):\n";
-    for(map<char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++)
+    int last_byte = encode(filename, fixed_table);
+    fixed_file << "Last byte remains bits: " << last_byte << endl;
+    for(map<unsigned char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++)
         fixed_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
     
     
@@ -111,6 +113,37 @@ void huffman(string filename, int fd) {
         }
     }
 }
+int encode(string filename, map<unsigned char, string> &table) {
+    fstream org_file(filename, ios::in);
+    fstream com_file("compressed-" + filename, ios::out);
+    int i = 0;
+    unsigned char temp = 0;
+    int count = 0; //count temp binary length
+    cout << "start encode\n";
+    while(!org_file.eof()) {
+        unsigned char ch = org_file.get();
+        for(i = 0; i < table[ch].length(); i++) {
+            temp <<= 1;
+            temp |= table[ch][i] - '0';
+            count++;
+            if(count == 8) {
+                com_file.put(temp);
+                temp = 0;
+                count = 0;
+            }
+        }
+    }
+    if(count != 8);
+        for(int i = count; i != 8; i++) {
+            temp <<= 1;
+            temp |= 0;
+        }
+    com_file.put(temp);
+    org_file.close();
+    com_file.close();
+    return count;
+}
+
     //build huffman tree
     /*Node* root;
     while(1) {

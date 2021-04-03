@@ -14,9 +14,9 @@
 using namespace std;
 class Node {
 public:
-    Node(char c, int f);
+    Node(unsigned char c, int f);
     Node(Node* first, Node* second);
-    char letter;
+    unsigned char letter;
     int freq;
     string code;
     Node *right = nullptr, *left = nullptr;
@@ -27,4 +27,5 @@ public:
 };
 int input(struct sockaddr_in *srv, string &filename);
 void huffman(string filename, int fd);
+int encode(string filename, map<unsigned char, string> &fixed_table);
 //void travel_huff_code(Node* root, string flag);

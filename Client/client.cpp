@@ -12,6 +12,7 @@ int main() {
         cout << "Error\n";
         exit(1);
     }
+
     //determine what to do according to input 
     bool do_you_link = false;
     while(1) {
@@ -34,7 +35,6 @@ int main() {
                 cout << "===\nwaiting...\n";
                 continue;
             }
-            cout << filename << endl;
             //send flag
             if(write(fd, "send", sizeof(buf)) < 0) { 
                 perror("write");
@@ -42,8 +42,7 @@ int main() {
             }
             //open file
             fstream file;
-            cout << filename << endl;
-            file.open(filename, ios::in);
+            file.open(filename, ios::in | ios::binary);
             if(!file.is_open()) {
                 if(write(fd, "error", sizeof(buf)) < 0) { 
                     perror("write");
@@ -57,10 +56,6 @@ int main() {
                 perror("write");
                 exit(1);
             }
-
-            //do huffman and send compress-related file
-            huffman(filename, fd);
-
             //send filesize
             file.seekg(0 , file.end);
             int filesize = file.tellg();
@@ -69,22 +64,39 @@ int main() {
                 perror("write");
                 exit(1);
             }
-            //send file
-            while(!file.eof()) {
-                file.read(buf, sizeof(buf));
-                if(write(fd, buf, file.gcount()) < 0) {
+            file.close();
+            //do huffman and send compress-related file
+            huffman(filename, fd);
+            
+
+            //send com_filesize
+            fstream com_file("compressed-" + filename, ios::in);
+            if(!com_file.is_open())
+                cout << "WTF!!!!!!\n";
+            com_file.seekg(0 , com_file.end);
+            int com_filesize = com_file.tellg();
+            com_file.seekg(0 , com_file.beg);
+            if(write(fd, &com_filesize, sizeof(filesize)) < 0) { 
+                perror("write");
+                exit(1);
+            }
+            //send com_file
+            while(!com_file.eof()) {
+                com_file.read(buf, sizeof(buf));
+                if(write(fd, buf, com_file.gcount()) < 0) {
                     perror("write");
                     exit(1);
                 }
             }
-            cout << "Original file length: " << filesize << " bytes, compressed file length:" << filesize << " bytes (ratio:)\n";
+            cout << "Original file length: " << filesize << " bytes, compressed file length: " << com_filesize
+                 << " bytes (ratio:" << 100.0 * com_filesize / filesize << "%)\n";
             time_t t = time(NULL);
             struct tm time = *localtime(&t);
             cout << "Time to upload:" << time.tm_year + 1900 << "/" << time.tm_mon + 1 << "/" << time.tm_mday
                  << " " << time.tm_hour << ":" << time.tm_min << endl;
             cout << "Using fixed-length codeword (3 bits)\n";
             cout << "===\nwaiting...\n";
-            file.close();
+            com_file.close();
         }
         else if(flag == 3){
             if(write(fd, "leave", sizeof(buf)) < 0) { 
@@ -99,5 +111,6 @@ int main() {
             cout << "===\nwaiting...\n";
         }
     }
+    close(fd);
     return 0;
 }

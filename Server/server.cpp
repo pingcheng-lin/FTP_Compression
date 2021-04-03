@@ -8,14 +8,12 @@ int main() {
     char buf[512]; //used by read()
     int nbytes = 0; //used by read()
 
-    
     //Get the file descriptor
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(fd < 0) {
         cout << "Error\n";
         exit(1);
     }
-
 
     srv.sin_family = AF_INET; //use the Internet address family
     srv.sin_port = htons(1234); //bind socket 'fd' to port 80
@@ -45,9 +43,9 @@ int main() {
     
     while(1) {
         //Read data from the socket
-        fstream file, related_file;
+        fstream com_file, related_file;
         string filename, related_filename;
-        int filesize, related_filesize;
+        int filesize, com_filesize, related_filesize;
         //read flag
         if(read(newfd, buf, sizeof(buf)) < 0) { 
             perror("read");
@@ -68,9 +66,12 @@ int main() {
         }
         else {
             filename = buf;
-            file.open(filename, ios::out);//reset file
         }
-
+        //read filesize
+        if(read(newfd, &filesize, sizeof(filesize)) < 0) { 
+            perror("read");
+            exit(1);
+        }
 
         //read related_file name
         if(read(newfd, buf, sizeof(buf)) < 0) { 
@@ -86,7 +87,6 @@ int main() {
             perror("read");
             exit(1);
         }
-        cout << "filesize: " << related_filesize << endl;
         //read related_file
         for(int i = related_filesize; i > 0; i-=nbytes)
             if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
@@ -99,29 +99,35 @@ int main() {
             }
         related_file.close();
 
-
-        //read filesize
-        if(read(newfd, &filesize, sizeof(filesize)) < 0) { 
+        com_file.open("compressed-" + filename, ios::out | ios::binary);
+        //read com_filesize
+        if(read(newfd, &com_filesize, sizeof(com_filesize)) < 0) { 
             perror("read");
             exit(1);
         }
-        cout << "filesize: " << filesize << endl;
-        //read file
-        for(int i = filesize; i > 0; i-=nbytes)
+        //read com_file
+        for(int i = com_filesize; i > 0; i-=nbytes)
             if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
                 perror("read");
                 exit(1);
             }
             else {
-                file.write(buf, nbytes);
+                com_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
-                
-        cout << "The client sends a file \"" << filename << "\" with size of " << filesize << " bytes.\n";
-        cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
+        decode(filename, com_filesize, related_filename);
         
-        cout << "===\n";
-        file.close();
+        com_file.close();
+        close(fd);
     }
     return 0;
+}
+void decode(string filename, int filesize, string related_filename) {
+    string com_filename = "compressed-" + filename;
+    fstream com_file(com_filename, ios::in);
+    fstream rel_file(related_filename, ios::in);
+    cout << "The client sends a file \"" << filename << "\" with size of " << filesize << " bytes.\n";
+    cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
+    cout << "===\n";
+    
 }

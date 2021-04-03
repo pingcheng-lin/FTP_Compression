@@ -7,3 +7,4 @@
 #include <cstring> //strcpy
 #include <fstream>
 using namespace std;
+void decode(string filename, int filesize, string related_filename);
