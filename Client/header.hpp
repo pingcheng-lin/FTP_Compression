@@ -27,5 +27,5 @@ public:
 };
 int input(struct sockaddr_in *srv, string &filename);
 void huffman(string filename, int fd);
-int encode(string filename, map<unsigned char, string> &fixed_table);
+void encode(string filename, map<unsigned char, string> &fixed_table);
 //void travel_huff_code(Node* root, string flag);

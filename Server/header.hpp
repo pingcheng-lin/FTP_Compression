@@ -6,5 +6,7 @@
 #include <cstdlib> //exit
 #include <cstring> //strcpy
 #include <fstream>
+#include <map>
+#include <string>
 using namespace std;
-void decode(string filename, int filesize, string related_filename);
+void decode(string filename, int filesize, int com_filesize, string related_filename);

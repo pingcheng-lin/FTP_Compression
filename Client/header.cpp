@@ -81,12 +81,11 @@ void huffman(string filename, int fd) {
     fstream fixed_file;
     string related_filename = "code-" + filename + ".txt";
     fixed_file.open(related_filename, ios::out | ios::binary);
-    fixed_file << "Fixed-length Huffman coding (3-bit codeword):\n";
-    int last_byte = encode(filename, fixed_table);
-    fixed_file << "Last byte remains bits: " << last_byte << endl;
-    for(map<unsigned char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++)
+    encode(filename, fixed_table);
+    fixed_file << "Fixed-length Huffman coding:\n";
+    for(map<unsigned char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++) {
         fixed_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
-    
+    }
     
     //send related_file name
     char buf[512]; //used by write()
@@ -113,35 +112,30 @@ void huffman(string filename, int fd) {
         }
     }
 }
-int encode(string filename, map<unsigned char, string> &table) {
+void encode(string filename, map<unsigned char, string> &table) {
     fstream org_file(filename, ios::in);
-    fstream com_file("compressed-" + filename, ios::out);
+    fstream com_file(filename + ".zip", ios::out);
     int i = 0;
-    unsigned char temp = 0;
     int count = 0; //count temp binary length
-    cout << "start encode\n";
+    int total = 0, len;
+    cout << "Start encode...\n";
     while(!org_file.eof()) {
         unsigned char ch = org_file.get();
-        for(i = 0; i < table[ch].length(); i++) {
-            temp <<= 1;
-            temp |= table[ch][i] - '0';
+        len = table[ch].length()-1;
+        for(i = 0; i <= len; i++) {
+            total += (table[ch][i] - '0') * pow(2, 7-count);
             count++;
             if(count == 8) {
-                com_file.put(temp);
-                temp = 0;
+                com_file.put(static_cast<unsigned char> (total));
+                total = 0;
                 count = 0;
             }
         }
     }
-    if(count != 8);
-        for(int i = count; i != 8; i++) {
-            temp <<= 1;
-            temp |= 0;
-        }
-    com_file.put(temp);
+    com_file.put(static_cast<unsigned char> (total));
     org_file.close();
     com_file.close();
-    return count;
+    cout << "Encode complete.\n";
 }
 
     //build huffman tree
@@ -159,8 +153,8 @@ int encode(string filename, map<unsigned char, string> &table) {
         }
     }
     travel_huff_code(root, "");
-    map<char, string> char_code;
-    //travel_get_code(char_code);
+    map<ch, string> ch_code;
+    //travel_get_code(ch_code);
     */
 
 /*void travel_huff_code(Node* node, string flag) {

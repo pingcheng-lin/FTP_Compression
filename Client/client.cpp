@@ -27,12 +27,12 @@ int main() {
                 exit(1);
             }
             cout << "The server with IP address \"" << inet_ntoa(srv.sin_addr) << "\" has accepted your connection.\n";
-            cout << "===\nwaiting...\n";
+            cout << "===\nWaiting...\n";
         }
         else if(flag == 2) {
             if(!do_you_link) {
                 cout << "link first!!!\n";
-                cout << "===\nwaiting...\n";
+                cout << "===\nWaiting...\n";
                 continue;
             }
             //send flag
@@ -70,9 +70,7 @@ int main() {
             
 
             //send com_filesize
-            fstream com_file("compressed-" + filename, ios::in);
-            if(!com_file.is_open())
-                cout << "WTF!!!!!!\n";
+            fstream com_file(filename + ".zip", ios::in);
             com_file.seekg(0 , com_file.end);
             int com_filesize = com_file.tellg();
             com_file.seekg(0 , com_file.beg);
@@ -94,8 +92,8 @@ int main() {
             struct tm time = *localtime(&t);
             cout << "Time to upload:" << time.tm_year + 1900 << "/" << time.tm_mon + 1 << "/" << time.tm_mday
                  << " " << time.tm_hour << ":" << time.tm_min << endl;
-            cout << "Using fixed-length codeword (3 bits)\n";
-            cout << "===\nwaiting...\n";
+            cout << "Using fixed-length codeword\n";
+            cout << "===\nWaiting...\n";
             com_file.close();
         }
         else if(flag == 3){
@@ -108,7 +106,7 @@ int main() {
         }
         else if(flag == 4) {
             cout << "You can 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n";
-            cout << "===\nwaiting...\n";
+            cout << "===\nWaiting...\n";
         }
     }
     close(fd);

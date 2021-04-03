@@ -1,4 +1,4 @@
 all:
 	g++ client.cpp header.cpp -o client
 clean:
-	rm client code*
+	rm client code* *.zip

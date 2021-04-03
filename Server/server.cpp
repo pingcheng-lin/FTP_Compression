@@ -40,7 +40,7 @@ int main() {
         exit(1);
     }
     cout << "A client \"" << inet_ntoa(cli.sin_addr) << "\" has connected via port num "  << ntohs(cli.sin_port) << " using SOCK_STREAM (TCP)\n";
-    
+    cout << "===\n";
     while(1) {
         //Read data from the socket
         fstream com_file, related_file;
@@ -61,6 +61,7 @@ int main() {
             exit(1);
         }
         else if(strcmp(buf, "error") == 0) {
+            close(fd);
             cout << "File open error!!!\n";
             exit(1);
         }
@@ -99,7 +100,7 @@ int main() {
             }
         related_file.close();
 
-        com_file.open("compressed-" + filename, ios::out | ios::binary);
+        com_file.open(filename + ".zip", ios::out | ios::binary);
         //read com_filesize
         if(read(newfd, &com_filesize, sizeof(com_filesize)) < 0) { 
             perror("read");
@@ -115,19 +116,11 @@ int main() {
                 com_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
-        decode(filename, com_filesize, related_filename);
-        
         com_file.close();
+        decode(filename, filesize, com_filesize, related_filename);
+        
+        
         close(fd);
     }
     return 0;
-}
-void decode(string filename, int filesize, string related_filename) {
-    string com_filename = "compressed-" + filename;
-    fstream com_file(com_filename, ios::in);
-    fstream rel_file(related_filename, ios::in);
-    cout << "The client sends a file \"" << filename << "\" with size of " << filesize << " bytes.\n";
-    cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
-    cout << "===\n";
-    
 }
