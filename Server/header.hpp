@@ -9,4 +9,4 @@
 #include <map>
 #include <string>
 using namespace std;
-void decode(string filename, int filesize, int com_filesize, string related_filename);
+void decode(string filename, int filesize, int com_filesize, string rel_filename);

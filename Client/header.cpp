@@ -31,39 +31,144 @@ Node::Node(unsigned char c, int f) {
     left = nullptr;
 }
 Node::Node(Node* first, Node* second) {
-    letter = first->letter + second->letter;
+    letter = 0;
     freq = first->freq + second->freq;
     code = "";
-    right = first;
-    left = second;
+    left = first;
+    right = second;
 }
 bool Compare::operator()(Node* first, Node* second) {
     return first->freq > second->freq;
 }
-void huffman(string filename, int fd) {
-    //get char and frequency mapping
+string huffman(string filename, int fd) {
+    //get char and frequency mapping from original file
     fstream file(filename, ios::in | ios::binary);
     map<unsigned char, int> ch_freq;
-    map<unsigned char, int>::iterator it;
     unsigned char ch;
     while(!file.eof()) {
         ch = file.get();
         ch_freq[ch]++;
     }
+    file.close();
+
     //push all map into priority queue
-    //priority_queue<Node*, vector<Node*>, Compare> queue;
-    priority_queue<Node*, vector<Node*>, greater<Node*>> fixed_ch_code;
+    map<unsigned char, int>::iterator it;
+    priority_queue<Node*, vector<Node*>, Compare> var_node;
+    priority_queue<Node*, vector<Node*>, greater<Node*>> fix_node;
     for(it = ch_freq.begin(); it != ch_freq.end(); it++) {
         Node* temp = new Node(it->first, it->second);
-        //queue.push(temp);
-        fixed_ch_code.push(temp);
+        var_node.push(temp);
+        fix_node.push(temp);
     }
-    //calculate fixed binary
-    map<unsigned char, string> fixed_table;
+
+    //build char map to fix binary string
+    map<unsigned char, string> table;
+    string rel_filename;
+    string var_or_fix;
+    cout << "If you want variable-length huffman, enter 'var'.\n";
+    cout << "If you want fixed-length huffman, enter 'fix'.\n";
+    while(1) {
+        cout << "=> ";
+        cin >> var_or_fix;
+        if(var_or_fix == "var") {
+            build_var_table(var_node, table);
+            rel_filename = "varcode-" + filename + ".txt";
+            break;
+        }
+        else if(var_or_fix == "fix") {
+            build_fix_table(fix_node, table);
+            rel_filename = "fixcode-" + filename + ".txt";
+            break;
+        }
+        else
+            cout << "Wrong input, enter 'var' or 'fix'.\n";
+    }
+
+    //compress the original file
+    encode(filename, table);
+
+    //create a related file
+    fstream rel_file(rel_filename, ios::out | ios::binary);
+    if(var_or_fix == "var")
+        rel_file << "Variable-length Huffman coding:\n";
+    else if(var_or_fix == "fix")
+        rel_file << "Fixed-length Huffman coding:\n";
+    rel_file << "Char\tFreq\tBinary\n";
+    for(map<unsigned char, string>::iterator ita = table.begin(); ita != table.end(); ita++)
+        rel_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
+    rel_file.close();
+
+    //send related_file name
+    char buf[512]; //used by write()
+    if(write(fd, rel_filename.c_str(), sizeof(buf)) < 0) { 
+        perror("write");
+        exit(1);
+    }
+
+    //send related_file size
+    rel_file.open(rel_filename, ios::in);
+    rel_file.seekg(0 , rel_file.end);
+    int filesize = rel_file.tellg();
+    rel_file.seekg(0 , rel_file.beg);
+    if(write(fd, &filesize, sizeof(filesize)) < 0) { 
+        perror("write");
+        exit(1);
+    }
+
+    //send related_file
+    while(!rel_file.eof()) {
+        rel_file.read(buf, sizeof(buf));
+        if(write(fd, buf, rel_file.gcount()) < 0) {
+            perror("write");
+            exit(1);
+        }
+    }
+    rel_file.close();
+    return var_or_fix;
+}    
+void travel_huff_code(Node* node, string parent_code, string flag) {
+    if(node == nullptr)
+        return;
+    node->code = parent_code + flag;
+    parent_code = node->code;
+    travel_huff_code(node->left, parent_code, "0");
+    travel_huff_code(node->right, parent_code, "1");
+}
+void travel_get_code(Node* node, map<unsigned char, string> &table) {
+    if(node == nullptr)
+        return;
+    if(node->left == nullptr && node->right == nullptr) {
+        table[node->letter] = node->code;
+        return;
+    }
+    travel_get_code(node->left, table);
+    travel_get_code(node->right, table);
+}
+void build_var_table(priority_queue<Node*, vector<Node*>, Compare> &var_node, map<unsigned char, string> &table) {
+    //build huffman tree
+    Node* root;
+    while(1) {
+        Node* first = var_node.top();
+        var_node.pop();
+        Node* second = var_node.top();
+        var_node.pop();
+        Node* new_node = new Node(first, second);
+        if(var_node.empty()) {
+            root = new_node;
+            break;
+        }
+        var_node.push(new_node);
+    }
+    //disribute code
+    travel_huff_code(root, "", "");
+    //collect code
+    travel_get_code(root, table);
+}
+void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_node, map<unsigned char, string> &table) {
     int count = 0, len;
     string binary;
-    for(len = 0; fixed_ch_code.size() > pow(2,len); len++);
-    while(!fixed_ch_code.empty()) {
+    for(len = 0; fix_node.size() > pow(2,len); len++);
+    while(!fix_node.empty()) {
         binary = "";
         int temp = count;
         for(int i = 0; i < len; i++) {
@@ -73,48 +178,14 @@ void huffman(string filename, int fd) {
                 binary = "0" + binary;
             temp >>= 1;
         }
-        fixed_table[fixed_ch_code.top()->letter] = binary;
+        table[fix_node.top()->letter] = binary;
         count++;
-        fixed_ch_code.pop();
-    }
-    file.close();
-    fstream fixed_file;
-    string related_filename = "code-" + filename + ".txt";
-    fixed_file.open(related_filename, ios::out | ios::binary);
-    encode(filename, fixed_table);
-    fixed_file << "Fixed-length Huffman coding:\n";
-    for(map<unsigned char, string>::iterator ita = fixed_table.begin(); ita != fixed_table.end(); ita++) {
-        fixed_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
-    }
-    
-    //send related_file name
-    char buf[512]; //used by write()
-    if(write(fd, related_filename.c_str(), sizeof(buf)) < 0) { 
-        perror("write");
-        exit(1);
-    }
-    
-    //send related_file size
-    fstream related_file(related_filename, ios::in);
-    related_file.seekg(0 , related_file.end);
-    int filesize = related_file.tellg();
-    related_file.seekg(0 , related_file.beg);
-    if(write(fd, &filesize, sizeof(filesize)) < 0) { 
-        perror("write");
-        exit(1);
-    }
-    //send related_file
-    while(!related_file.eof()) {
-        related_file.read(buf, sizeof(buf));
-        if(write(fd, buf, related_file.gcount()) < 0) {
-            perror("write");
-            exit(1);
-        }
+        fix_node.pop();
     }
 }
 void encode(string filename, map<unsigned char, string> &table) {
-    fstream org_file(filename, ios::in);
-    fstream com_file(filename + ".zip", ios::out);
+    fstream org_file(filename, ios::in | ios::binary);
+    fstream com_file(filename + ".zip", ios::out | ios::binary);
     int i = 0;
     int count = 0; //count temp binary length
     int total = 0, len;
@@ -138,30 +209,3 @@ void encode(string filename, map<unsigned char, string> &table) {
     com_file.close();
     cout << "Encode complete.\n";
 }
-
-    //build huffman tree
-    /*Node* root;
-    while(1) {
-        Node* first = queue.top();
-        queue.pop();
-        Node* second = queue.top();
-        queue.pop();
-        Node* new_node = new Node(first, second);
-        queue.push(new_node);
-        if(queue.empty()) {
-            root = new_node;
-            break;
-        }
-    }
-    travel_huff_code(root, "");
-    map<ch, string> ch_code;
-    //travel_get_code(ch_code);
-    */
-
-/*void travel_huff_code(Node* node, string flag) {
-    if(node == nullptr)
-        return;
-    node->code = node->code + flag;
-    travel_huff_code(node->left, "0");
-    travel_huff_code(node->right, "1");
-}*/

@@ -43,9 +43,9 @@ int main() {
     cout << "===\n";
     while(1) {
         //Read data from the socket
-        fstream com_file, related_file;
-        string filename, related_filename;
-        int filesize, com_filesize, related_filesize;
+        fstream com_file, rel_file;
+        string filename, rel_filename;
+        int filesize, com_filesize, rel_filesize;
         //read flag
         if(read(newfd, buf, sizeof(buf)) < 0) { 
             perror("read");
@@ -74,31 +74,31 @@ int main() {
             exit(1);
         }
 
-        //read related_file name
+        //read rel_file name
         if(read(newfd, buf, sizeof(buf)) < 0) { 
             perror("read");
             exit(1);
         }
         else {
-            related_filename = buf;
-            related_file.open(related_filename, ios::out);//reset file
+            rel_filename = buf;
+            rel_file.open(rel_filename, ios::out);//reset file
         }
-        //read related_file size
-        if(read(newfd, &related_filesize, sizeof(related_filesize)) < 0) { 
+        //read rel_file size
+        if(read(newfd, &rel_filesize, sizeof(rel_filesize)) < 0) { 
             perror("read");
             exit(1);
         }
-        //read related_file
-        for(int i = related_filesize; i > 0; i-=nbytes)
+        //read rel_file
+        for(int i = rel_filesize; i > 0; i-=nbytes)
             if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
                 perror("read");
                 exit(1);
             }
             else {
-                related_file.write(buf, nbytes);
+                rel_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
-        related_file.close();
+        rel_file.close();
 
         com_file.open(filename + ".zip", ios::out | ios::binary);
         //read com_filesize
@@ -117,7 +117,7 @@ int main() {
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
         com_file.close();
-        decode(filename, filesize, com_filesize, related_filename);
+        decode(filename, filesize, com_filesize, rel_filename);
         close(fd);
     }
     return 0;

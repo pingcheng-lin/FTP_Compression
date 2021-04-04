@@ -65,10 +65,10 @@ int main() {
                 exit(1);
             }
             file.close();
-            //do huffman and send compress-related file
-            huffman(filename, fd);
             
-
+            //do huffman and send compress-related file
+            string var_or_fix = huffman(filename, fd);
+            
             //send com_filesize
             fstream com_file(filename + ".zip", ios::in);
             com_file.seekg(0 , com_file.end);
@@ -78,6 +78,7 @@ int main() {
                 perror("write");
                 exit(1);
             }
+            
             //send com_file
             while(!com_file.eof()) {
                 com_file.read(buf, sizeof(buf));
@@ -92,7 +93,10 @@ int main() {
             struct tm time = *localtime(&t);
             cout << "Time to upload:" << time.tm_year + 1900 << "/" << time.tm_mon + 1 << "/" << time.tm_mday
                  << " " << time.tm_hour << ":" << time.tm_min << endl;
-            cout << "Using fixed-length codeword\n";
+            if(var_or_fix == "var")
+                cout << "Using variable-length codeword\n";
+            else if(var_or_fix == "fix")
+                cout << "Using fixed-length codeword\n";
             cout << "===\nWaiting...\n";
             com_file.close();
         }

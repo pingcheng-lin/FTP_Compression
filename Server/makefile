@@ -1,4 +1,4 @@
 all:
 	g++ server.cpp header.cpp -o server
 clean:
-	rm server code* *.zip
+	rm server fixcode-* varcode-* *.zip

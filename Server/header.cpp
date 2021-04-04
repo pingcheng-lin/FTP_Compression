@@ -1,11 +1,12 @@
 #include"header.hpp"
-void decode(string filename, int filesize, int com_filesize, string related_filename) {
+void decode(string filename, int filesize, int com_filesize, string rel_filename) {
     string com_filename = filename + ".zip";
     fstream com_file(com_filename, ios::in | ios::binary);
-    fstream rel_file(related_filename, ios::in | ios::binary);
+    fstream rel_file(rel_filename, ios::in | ios::binary);
     fstream file(filename, ios::out | ios::binary);
     map<string, unsigned char> code_char;
     string recycle;
+    getline(rel_file, recycle);
     getline(rel_file, recycle);
     unsigned char temp_char;
     string temp_str;
@@ -32,7 +33,7 @@ void decode(string filename, int filesize, int com_filesize, string related_file
             else
                 binary = binary + "0";
             iter = code_char.find(binary);
-            if (iter != code_char.end()) {
+            if(iter != code_char.end()) {
                 file.put(code_char[binary]);
                 count++;
                 binary = "";
@@ -43,12 +44,11 @@ void decode(string filename, int filesize, int com_filesize, string related_file
         if(count  == filesize)
             break;
     }
-    cout << "count" << count << endl;
     com_file.close();
     rel_file.close();
     file.close();
     cout << "Decode complete.\n";
     cout << "The client sends a file \"" << filename << "\" with size of " << filesize << " bytes.\n";
-    cout << "The Huffman coding data are stored in \"" << related_filename << "\".\n";
+    cout << "The Huffman coding data are stored in \"" << rel_filename << "\".\n";
     cout << "===\n";
 }
