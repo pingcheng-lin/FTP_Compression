@@ -39,7 +39,7 @@ void decode(string filename, int filesize, int com_filesize, string rel_filename
                 binary = binary + "1";
             else
                 binary = binary + "0";
-            iter = code_char.find(binary);
+            iter = code_char.find(binary); //find whether binary is in the table
             if(iter != code_char.end()) {
                 file.put(code_char[binary]);
                 count++;

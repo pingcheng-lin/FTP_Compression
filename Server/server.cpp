@@ -90,10 +90,14 @@ int main() {
             perror("read");
             exit(1);
         }
-
         //read rel_file
-        for(int i = rel_filesize; i > 0; i-=nbytes)
-            if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
+        for(int i = rel_filesize; i > 0; i-=nbytes) {
+			int true_len; //if no see the true len on unix, it will stuck		
+			if(i < sizeof(buf))
+				true_len = i;
+			else
+				true_len = sizeof(buf);
+            if((nbytes = read(newfd, buf, true_len)) < 0) { 
                 perror("read");
                 exit(1);
             }
@@ -101,6 +105,7 @@ int main() {
                 rel_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
+		}
         rel_file.close();
 
         com_file.open(filename + ".zip", ios::out | ios::binary);
@@ -110,8 +115,13 @@ int main() {
             exit(1);
         }
         //read com_file
-        for(int i = com_filesize; i > 0; i-=nbytes)
-            if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
+        for(int i = com_filesize; i > 0; i-=nbytes) {
+			int true_len; //In reading rel_file,if no see the true len on unix, it will stuck, but not here		
+			if(i < sizeof(buf))
+				true_len = i;
+			else
+				true_len = sizeof(buf);
+            if((nbytes = read(newfd, buf, true_len)) < 0) { 
                 perror("read");
                 exit(1);
             }
@@ -119,6 +129,7 @@ int main() {
                 com_file.write(buf, nbytes);
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
+		}
         com_file.close();
 
         //decode compressed file
