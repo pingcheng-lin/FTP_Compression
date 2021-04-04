@@ -17,7 +17,7 @@ int main() {
     bool do_you_link = false;
     while(1) {
         string filename;
-        int flag = input(&srv, filename); //1: link, 2: send, 3:leave
+        int flag = input(&srv, filename); //1: link, 2: send, 3:leave, 4:help
         if(flag == 1 && !do_you_link) {
             do_you_link = true;
             //Connect the file descriptor to the server’s IP and port

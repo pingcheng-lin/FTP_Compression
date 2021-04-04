@@ -61,7 +61,7 @@ string huffman(string filename, int fd) {
         fix_node.push(temp);
     }
 
-    //build char map to fix binary string
+    //Determine variable or fixed
     map<unsigned char, string> table;
     string rel_filename;
     string var_or_fix;
@@ -93,7 +93,7 @@ string huffman(string filename, int fd) {
         rel_file << "Variable-length Huffman coding:\n";
     else if(var_or_fix == "fix")
         rel_file << "Fixed-length Huffman coding:\n";
-    rel_file << "Char\tFreq\tBinary\n";
+    rel_file << "Char\tFrequency\tCodeword\n";
     for(map<unsigned char, string>::iterator ita = table.begin(); ita != table.end(); ita++)
         rel_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
     rel_file.close();
@@ -167,7 +167,9 @@ void build_var_table(priority_queue<Node*, vector<Node*>, Compare> &var_node, ma
 void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_node, map<unsigned char, string> &table) {
     int count = 0, len;
     string binary;
+    //calculate needed binary string length
     for(len = 0; fix_node.size() > pow(2,len); len++);
+    //create binary string according to letter priority
     while(!fix_node.empty()) {
         binary = "";
         int temp = count;
@@ -187,8 +189,8 @@ void encode(string filename, map<unsigned char, string> &table) {
     fstream org_file(filename, ios::in | ios::binary);
     fstream com_file(filename + ".zip", ios::out | ios::binary);
     int i = 0;
-    int count = 0; //count temp binary length
-    int total = 0, len;
+    int count = 0; //count 8 time for a byte
+    int total = 0, len; //total: a byte; len: table's binary string length
     cout << "Start encode...\n";
     while(1) {
         unsigned char ch = org_file.get();

@@ -41,6 +41,7 @@ int main() {
     }
     cout << "A client \"" << inet_ntoa(cli.sin_addr) << "\" has connected via port num "  << ntohs(cli.sin_port) << " using SOCK_STREAM (TCP)\n";
     cout << "===\n";
+
     while(1) {
         //Read data from the socket
         fstream com_file, rel_file;
@@ -65,9 +66,9 @@ int main() {
             cout << "File open error!!!\n";
             exit(1);
         }
-        else {
+        else
             filename = buf;
-        }
+
         //read filesize
         if(read(newfd, &filesize, sizeof(filesize)) < 0) { 
             perror("read");
@@ -81,13 +82,15 @@ int main() {
         }
         else {
             rel_filename = buf;
-            rel_file.open(rel_filename, ios::out);//reset file
+            rel_file.open(rel_filename, ios::out);
         }
+
         //read rel_file size
         if(read(newfd, &rel_filesize, sizeof(rel_filesize)) < 0) { 
             perror("read");
             exit(1);
         }
+
         //read rel_file
         for(int i = rel_filesize; i > 0; i-=nbytes)
             if((nbytes = read(newfd, buf, sizeof(buf))) < 0) { 
@@ -117,8 +120,10 @@ int main() {
                 memset(buf, 0, 512*sizeof(buf[0]));
             }
         com_file.close();
+
+        //decode compressed file
         decode(filename, filesize, com_filesize, rel_filename);
-        close(fd);
     }
+    close(fd);
     return 0;
 }
