@@ -4,7 +4,7 @@ int main() {
     struct sockaddr_in srv; //used by connect()
     char buf[512]; //used by write()
 
-    cout << "Welcome\nYou can 'link' [an IP address] [a port], 'send' [a file], 'leave', or 'help'.\n";
+    cout << "Welcome\nYou need to 'link' [an IP address] [a port] first.\n";
     cout << "===\nWaiting...\n";
     //Get the file descriptor
     fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -112,6 +112,11 @@ int main() {
             cout << "You can 'link' [an IP address] [a port], 'send' [a file], or 'leave'.\n";
             cout << "===\nWaiting...\n";
         }
+        else {
+            cout << "You can 'send' [a file] or 'leave'.\n";
+            cout << "===\nWaiting...\n";
+        }
+
     }
     close(fd);
     return 0;
