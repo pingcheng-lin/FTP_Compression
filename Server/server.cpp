@@ -118,8 +118,6 @@ int main() {
             }
         com_file.close();
         decode(filename, filesize, com_filesize, related_filename);
-        
-        
         close(fd);
     }
     return 0;

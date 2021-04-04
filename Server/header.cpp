@@ -24,7 +24,7 @@ void decode(string filename, int filesize, int com_filesize, string related_file
     map<string, unsigned char>::iterator iter;
     int count = 0; //count byte
     string binary = "";
-    while(1) { //test one bit at a time
+    while(!com_file.eof()) { //test one bit at a time
         unsigned char t = com_file.get();
         for(int i = 7; i >= 0; i--) {
             if(((t<<(7-i)) >> 7) & 1)
@@ -43,6 +43,7 @@ void decode(string filename, int filesize, int com_filesize, string related_file
         if(count  == filesize)
             break;
     }
+    cout << "count" << count << endl;
     com_file.close();
     rel_file.close();
     file.close();

@@ -119,8 +119,10 @@ void encode(string filename, map<unsigned char, string> &table) {
     int count = 0; //count temp binary length
     int total = 0, len;
     cout << "Start encode...\n";
-    while(!org_file.eof()) {
+    while(1) {
         unsigned char ch = org_file.get();
+        if(org_file.eof())
+            break;
         len = table[ch].length()-1;
         for(i = 0; i <= len; i++) {
             total += (table[ch][i] - '0') * pow(2, 7-count);
@@ -132,7 +134,6 @@ void encode(string filename, map<unsigned char, string> &table) {
             }
         }
     }
-    com_file.put(static_cast<unsigned char> (total));
     org_file.close();
     com_file.close();
     cout << "Encode complete.\n";
