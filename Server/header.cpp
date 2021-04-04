@@ -25,11 +25,8 @@ void decode(string filename, int filesize, int com_filesize, string rel_filename
     map<string, unsigned char>::iterator iter;
     int count = 0; //count byte
     string binary = "";
-    int qwe = 0;
     while(1) { //test one bit at a time
         unsigned char t = com_file.get();
-        qwe++;
-        cout << qwe << endl;
         if(com_file.eof())
             break;
         for(int i = 7; i >= 0; i--) {
