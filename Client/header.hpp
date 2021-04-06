@@ -13,10 +13,16 @@
 #include <cstring> //strcmp
 #include <ctime> //current time
 using namespace std;
+class Compare;
 class Node {
 public:
     Node(unsigned char c, int f);
     Node(Node* first, Node* second);
+    friend class Compare;
+    friend void travel_huff_code(Node* root, string parent_code, string flag); //travel huffmantree and give code
+    friend void travel_get_code(Node* node, map<unsigned char, string> &table); //travel huffmantree and get code
+    friend void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_node, map<unsigned char, string> &table); //build table that letter map to binary code
+private:
     unsigned char letter;
     int freq;
     string code;
@@ -28,8 +34,5 @@ public:
 };
 int input(struct sockaddr_in *srv, string &filename); //read input and related information
 string huffman(string filename, int fd); //do huffman compress
-void travel_huff_code(Node* root, string parent_code, string flag); //travel huffmantree and give code
-void travel_get_code(Node* node, map<unsigned char, string> &table); //travel huffmantree and get code
 void build_var_table(priority_queue<Node*, vector<Node*>, Compare> &var_node, map<unsigned char, string> &table); //build table that letter map to binary code
-void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_node, map<unsigned char, string> &table); //build table that letter map to binary code
 int encode(string filename, map<unsigned char, string> &fix_table); //compress original file
