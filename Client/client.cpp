@@ -35,22 +35,22 @@ int main() {
                 cout << "===\nWaiting...\n";
                 continue;
             }
+            
+            //open file
+            fstream file;
+            file.open(filename, ios::in | ios::binary);
+            if(!file.is_open()) {
+                perror("open");
+                cout << "===\nWaiting...\n";
+                continue;
+            }
+
             //send flag
             if(write(fd, "send", sizeof(buf)) < 0) { 
                 perror("write");
                 exit(1);
             }
-            //open file
-            fstream file;
-            file.open(filename, ios::in | ios::binary);
-            if(!file.is_open()) {
-                if(write(fd, "error", sizeof(buf)) < 0) { 
-                    perror("write");
-                    exit(1);
-                }
-                perror("open");
-                exit(1);
-            }
+
             //send filename
             if(write(fd, filename.c_str(), sizeof(buf)) < 0) { 
                 perror("write");

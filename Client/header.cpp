@@ -85,7 +85,7 @@ string huffman(string filename, int fd) {
     }
 
     //compress the original file
-    encode(filename, table);
+    int count = encode(filename, table); //last byte's bits
 
     //create a related file
     fstream rel_file(rel_filename, ios::out | ios::binary);
@@ -93,6 +93,7 @@ string huffman(string filename, int fd) {
         rel_file << "Variable-length Huffman coding:\n";
     else if(var_or_fix == "fix")
         rel_file << "Fixed-length Huffman coding:\n";
+    rel_file << "Last byte's bits: " << count << endl;
     rel_file << "Char\tFrequency\tCodeword\n";
     for(map<unsigned char, string>::iterator ita = table.begin(); ita != table.end(); ita++)
         rel_file << ita->first << "\t" << ch_freq.find(ita->first)->second << "\t" << ita->second << endl;
@@ -185,17 +186,15 @@ void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_n
         fix_node.pop();
     }
 }
-void encode(string filename, map<unsigned char, string> &table) {
+int encode(string filename, map<unsigned char, string> &table) {
     fstream org_file(filename, ios::in | ios::binary);
     fstream com_file(filename + ".zip", ios::out | ios::binary);
     int i = 0;
     int count = 0; //count 8 time for a byte
     int total = 0, len; //total: a byte; len: table's binary string length
     cout << "Start encode...\n";
-    while(1) {
+    while(!org_file.eof()) {
         unsigned char ch = org_file.get();
-        if(org_file.eof())
-            break;
         len = table[ch].length()-1;
         for(i = 0; i <= len; i++) {
             total += (table[ch][i] - '0') * pow(2, 7-count);
@@ -210,4 +209,5 @@ void encode(string filename, map<unsigned char, string> &table) {
     org_file.close();
     com_file.close();
     cout << "Encode complete.\n";
+    return count;
 }

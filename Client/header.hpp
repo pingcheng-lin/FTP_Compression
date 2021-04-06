@@ -32,4 +32,4 @@ void travel_huff_code(Node* root, string parent_code, string flag); //travel huf
 void travel_get_code(Node* node, map<unsigned char, string> &table); //travel huffmantree and get code
 void build_var_table(priority_queue<Node*, vector<Node*>, Compare> &var_node, map<unsigned char, string> &table); //build table that letter map to binary code
 void build_fix_table(priority_queue<Node*, vector<Node*>, greater<Node*>> &fix_node, map<unsigned char, string> &table); //build table that letter map to binary code
-void encode(string filename, map<unsigned char, string> &fix_table); //compress original file
+int encode(string filename, map<unsigned char, string> &fix_table); //compress original file

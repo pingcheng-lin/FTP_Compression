@@ -61,11 +61,6 @@ int main() {
             perror("read");
             exit(1);
         }
-        else if(strcmp(buf, "error") == 0) {
-            close(fd);
-            cout << "File open error!!!\n";
-            exit(1);
-        }
         else
             filename = buf;
 
