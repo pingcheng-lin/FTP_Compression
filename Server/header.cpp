@@ -10,7 +10,6 @@ void decode(string filename, int filesize, int com_filesize, string rel_filename
     string recycle;
     getline(rel_file, recycle);
     getline(rel_file, recycle);
-    int last_byte_bit = recycle[recycle.length()-1] - '0';
     getline(rel_file, recycle);
 
     //map usefull binary string and letter
@@ -34,6 +33,8 @@ void decode(string filename, int filesize, int com_filesize, string rel_filename
     string binary = "";
     while(1) { //test one bit at a time
         unsigned char t = com_file.get();
+        if(com_file.eof())
+            break;
         for(int i = 7; i >= 0; i--) {
             if(((t<<(7-i)) >> 7) & 1) //erase unused bits and 'or' with bit 1
                 binary = binary + "1";
@@ -44,8 +45,6 @@ void decode(string filename, int filesize, int com_filesize, string rel_filename
                 file.put(code_char[binary]);
                 count++;
                 binary = "";
-                if(com_file.eof() && last_byte_bit != 0 && 8 - i == last_byte_bit) //use to identify last byte
-                    break;
                 if(count == filesize)
                     break;
             }
